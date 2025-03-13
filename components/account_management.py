@@ -380,23 +380,39 @@ class AccountManagementDialog(ctk.CTkToplevel):
         remove_btn.pack(side="bottom", pady=2)
         
     def toggle_connection(self, account):
-        """Toggle connection state for an account."""
+        """Toggle the connection status of an account."""
         username = account.get("username", "")
         
         if account.get("is_logged_in", False):
-            # Disconnect
-            if self.reposter:
+            # Disconnect the account
+            try:
                 self.reposter.disconnect_account(username)
+                tkmb.showinfo("Success", f"Account '{username}' disconnected")
                 self.load_accounts()
+            except Exception as e:
+                tkmb.showerror("Error", f"Failed to disconnect account: {str(e)}")
         else:
-            # Connect
-            if self.reposter:
-                password = account.get("password", "")
-                success = self.reposter.connect_account(username, password)
-                self.load_accounts()
-                
-                # Don't automatically load posts or update repost statuses
-                # This is now handled by the "Load Posts" button
+            # Connect the account
+            try:
+                success = self.reposter.connect_account(username)
+                if success:
+                    tkmb.showinfo("Success", f"Account '{username}' connected")
+                    self.load_accounts()
+                    
+                    # Check if this is the main account and update parent window status if needed
+                    is_main = (self.reposter.config.get("main_account") and 
+                              self.reposter.config["main_account"] and
+                              username == self.reposter.config["main_account"].get("username"))
+                    
+                    # Update main window connection status if this was the main account
+                    if is_main and hasattr(self.parent, 'refresh_connection_status'):
+                        self.parent.after(100, self.parent.refresh_connection_status)
+                else:
+                    tkmb.showerror("Error", f"Failed to connect to account '{username}'")
+            except IPBlacklistError as e:
+                self._show_ip_blacklist_error(str(e))
+            except Exception as e:
+                tkmb.showerror("Error", f"Failed to connect account: {str(e)}")
                 
     def load_posts(self, account):
         """Load posts for a connected account."""
@@ -513,6 +529,10 @@ class AccountManagementDialog(ctk.CTkToplevel):
                 
                 # Refresh the accounts list
                 self.load_accounts()
+                
+                # Update main window connection status
+                if hasattr(self.parent, 'refresh_connection_status'):
+                    self.parent.after(100, self.parent.refresh_connection_status)
                 
                 tkmb.showinfo("Success", f"'{username}' is now the main account")
             except IPBlacklistError as e:

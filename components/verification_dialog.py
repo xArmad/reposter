@@ -4,6 +4,8 @@ Verification dialog component for handling Instagram verification codes.
 import customtkinter as ctk
 import tkinter.messagebox as tkmb
 from utils.constants import COLORS, HAS_CTK_MESSAGEBOX
+import time
+import logging
 
 # Import CTkMessagebox if available
 if HAS_CTK_MESSAGEBOX:
@@ -159,6 +161,33 @@ class VerificationDialog(ctk.CTkToplevel):
         Returns:
             str: The verification code entered by the user, or None if cancelled
         """
-        dialog = VerificationDialog(parent, username, challenge_type, title, message, has_cancel)
-        dialog.wait_window()
-        return dialog.verification_code 
+        try:
+            # Create dialog and make sure it's displayed
+            dialog = VerificationDialog(parent, username, challenge_type, title, message, has_cancel)
+            
+            # Use a more robust waiting approach that doesn't rely on the window path
+            try:
+                dialog.wait_window()
+            except Exception as e:
+                # If wait_window fails, use a polling approach
+                logging.warning(f"wait_window failed, using polling approach: {str(e)}")
+                while dialog.winfo_exists():
+                    parent.update()
+                    time.sleep(0.1)
+            
+            return dialog.verification_code
+        except Exception as e:
+            logging.error(f"Error showing verification dialog: {str(e)}")
+            # Fallback to a simple text entry dialog
+            if HAS_CTK_MESSAGEBOX:
+                from CTkMessagebox import CTkInputDialog
+                result = CTkInputDialog(
+                    title=f"Verification for {username}",
+                    text=f"Enter the verification code sent via {challenge_type}:",
+                ).get_input()
+                return result
+            else:
+                return tkmb.askstring(
+                    f"Verification for {username}",
+                    f"Enter the verification code sent via {challenge_type}:"
+                ) 

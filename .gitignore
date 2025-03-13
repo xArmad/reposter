@@ -1,0 +1,70 @@
+# PyInstaller
+build/
+dist/
+*.manifest
+*.spec
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+*.egg-info/
+*.egg
+
+# Virtual Environments
+venv/
+ENV/
+env/
+
+# IDE files
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+
+# Logs
+*.log
+logs/
+log/
+
+# User-specific files
+config.json
+*.session
+*.session-journal
+*.cookie
+cookies/
+sessions/
+
+# Temporary files
+temp/
+tmp/
+
+# SSL certs
+cert/
+certs/
+*.pem
+*.crt
+
+# Credentials (IMPORTANT!)
+crypto.key
+secrets.json
+credentials.json
+.env
+
+# Cached data
+.cache/
+cache/
+__cache__/
+
+# Testing
+.coverage
+htmlcov/
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3 

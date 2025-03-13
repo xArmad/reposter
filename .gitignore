@@ -2,7 +2,7 @@
 build/
 dist/
 *.manifest
-*.spec
+# *.spec  # We want to include our spec file
 
 # Python
 __pycache__/
